@@ -12,15 +12,21 @@ import argparse
 
 
 class Server():
-    def __init__(self, environment, filter, explore_noise, *args, **kwargs):
+    def __init__(self, environment, filter, explore_noise, one_action, *args, **kwargs):
         self.environment = environment
-        self.agent = Agent(2, 2, explore_noise = explore_noise)
+        self.one_action = one_action
+        self.state_dim = 2
+        if self.one_action:
+            self.action_dim = 1
+        else:
+            self.action_dim = 2
+        self.agent = Agent(self.state_dim, self.action_dim, explore_noise = explore_noise)
         self._stamp("Environment: " + environment)
         self._stamp("Using Exploration Noise: " + explore_noise)
         self.state_record = [] # filtered.
         self.unfiltered_state_record = []
         self.action_record = []
-        self.state_mean = np.zeros((1,2))
+        self.state_mean = np.zeros((1,self.state_dim))
         # self.server = SimpleXMLRPCServer(("0.0.0.0", 8000))
         self.server = SimpleXMLRPCServer(("localhost", 8000),logRequests=False)
         self._register()
@@ -53,9 +59,10 @@ class Server():
         self.server.register_function(self._restore, "restore")
 
     def _reward_func(self, this_state, action, next_state):
-        reward = -(np.sign(next_state[0,1]) * (next_state[0,1])**2)
-        #reward = -(np.sign(next_state[0,1]) * ((next_state[0,1])**2) + 0.1*((next_state[0,0])**2))
-        return reward
+        # reward = -np.sign(next_state[0,1]) * (next_state[0,1])**2
+        # reward = -np.sign(next_state[0,1]) * (next_state[0,1])**2 - 0.1*next_state[0,0]**2
+        reward_raw = - next_state[0,1] - np.pi * (1/8) * 0.0097 * (3.66**3) * np.sum((np.abs(action)**3))
+        return reward_raw
 
     def _converter(self, signal):
         """
@@ -78,9 +85,9 @@ class Server():
         calforce = calmat @ signal_array
         lift = calforce[0:1,:]*4.44822 / non_dimensional # C_l
         drag = calforce[1:2,:]*4.44822 / non_dimensional # C_d
-        state = np.concatenate([lift, drag], axis = 0) #(2, 1)
+        state = np.concatenate([lift, drag], axis = 0) #(state_dim, 1)
 
-        return state.transpose() #(1,2)
+        return state.transpose() #(1, state_dim)
 
     def _init(self, episode_count):
         try:
@@ -95,7 +102,7 @@ class Server():
     def _start_episode(self,raw_data):
         # raw_data for calibrating
         if self.environment == "Experiment":
-            self.state_mean = self._converter(raw_data) #(1, 2)
+            self.state_mean = self._converter(raw_data) #(1, state_dim)
         self.state_record = []
         self.unfiltered_state_record = []
         self.action_record = []
@@ -106,14 +113,18 @@ class Server():
 
     def _request_action(self, raw_data, stochastic):
         if self.environment == "Experiment":
-            calibrated_state = self._converter(raw_data) - self.state_mean #(1,2)
+            calibrated_state = self._converter(raw_data) - self.state_mean #(1, state_dim)
         elif self.environment == "CFD":
             calibrated_state = np.asfarray(raw_data.split("_"),float)[None,:]
         else:
             raise NotImplementedError
         filtered_state = self.filter.estimate(calibrated_state)
 
-        action = self.agent.get_action(filtered_state, stochastic = stochastic) #(1,2)
+        action = self.agent.get_action(filtered_state, stochastic = stochastic) #(1, action_dim)
+        
+        if self.one_action:
+            action = np.concatenate((action, - action), axis=1)
+
         self.unfiltered_state_record.append(calibrated_state)
         self.state_record.append(filtered_state)
         self.action_record.append(action)
@@ -146,12 +157,12 @@ class Server():
                     action = np.array(self.action_record))
         record_length = len(self.state_record)
         self._stamp("Length of Record: " + str(record_length))
-        for i in range(record_length - 1):
+        for i in range(0, record_length - 1):
             reward = self._reward_func(self.state_record[i], 
                                        self.action_record[i], 
                                        self.state_record[i+1])
             self.agent.replay_buffer.store(self.state_record[i],
-                                        self.action_record[i], 
+                                        self.action_record[i][0,:self.action_dim],
                                         reward,
                                         self.state_record[i+1],
                                         0)
@@ -191,13 +202,15 @@ class Server():
 
     def start_server(self):
         self._stamp("Server Listening...")
+        print(self.action_dim)
         self.server.serve_forever()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="server for experiments and CFD")
     parser.add_argument("-env", "--environment", choices=["CFD", "Experiment"], default="Experiment")
     parser.add_argument("-fil", "--filter", choices=["None", "Kalman"], default="Kalman")
-    parser.add_argument("-exn", "--explore_noise", choices=["Gaussian"], default="Gaussian")
+    parser.add_argument("-exn", "--explore_noise", choices=["Gaussian", "Process"], default="Gaussian")
+    parser.add_argument("-one", "--one_action", action='store_true')
     args = parser.parse_args()
 
     myserver = Server(**args.__dict__)

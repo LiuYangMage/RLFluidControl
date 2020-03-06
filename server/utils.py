@@ -67,3 +67,21 @@ class ReplayBuffer:
                     rews=self.rews_buf[idxs],
                     done=self.done_buf[idxs])
 
+
+class ProcessNoise:
+    """
+    Generator of Ornstein–Uhlenbeck Process Noise
+    """
+    def __init__(self, dim):
+        self.x = np.zeros((1,dim))
+        self.dim = dim
+        self.t = 0.1 # time step between adjacent call.
+        self.n = 10 # iterations for one call.
+        self.dt = self.t/self.n
+        self.theta = 1
+        self.sigma = np.sqrt(2)
+
+    def next(self):
+        for _ in range(self.n):
+            self.x = self.x - self.theta * self.x * self.dt + np.random.normal(0, self.sigma,[1,self.dim]) * np.sqrt(self.dt)
+        return self.x

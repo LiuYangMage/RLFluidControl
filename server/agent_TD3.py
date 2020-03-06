@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import random
 import os
-from utils import ReplayBuffer
+from utils import ReplayBuffer, ProcessNoise
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  
 os.environ["CUDA_VISIBLE_DEVICES"]= str(1)
@@ -16,7 +16,8 @@ class Agent:
         self.bfs = 1000000
         self.d = 2
         self.explore_noise = explore_noise
-        self.explore_noise_size = 0.1
+        self.explore_noise_size = 0.1 # or 0.01
+        self.process_noise_generator = ProcessNoise(action_dim)
         self.criticreg_noise_size = 0.2
         self.criticreg_noise_clip = 0.5
 
@@ -115,6 +116,8 @@ class Agent:
         if stochastic:
             if self.explore_noise == "Gaussian":
                 explore_noise = np.random.normal(0, self.explore_noise_size, [1, self.action_dim])
+            elif self.explore_noise == "Process":
+                explore_noise = self.explore_noise_size * self.process_noise_generator.next()
             else:
                 raise NotImplementedError
             this_action = np.clip(this_action + explore_noise, -1, 1)
