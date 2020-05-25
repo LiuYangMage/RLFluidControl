@@ -128,16 +128,13 @@ class Server():
         self.unfiltered_state_record.append(calibrated_state)
         self.state_record.append(filtered_state)
         self.action_record.append(action)
-        self._stamp("C_lift: {:.3f} C_drag: {:.3f} Action: {:.3f} {:.3f} ".format(
-                    filtered_state[0,0], 
-                    filtered_state[0,1],
-                    action[0,0],
-                    action[0,1]))
+        self._stamp("state: " + np.array2string(filtered_state[0,:], formatter={'float_kind':lambda x: "%.2f" % x}) +
+                    "  action: " + np.array2string(action[0,:], formatter={'float_kind':lambda x: "%.2f" % x}))
 
         if self.environment == "Experiment":
             raw_action = action[0,:].tolist()
         elif self.environment == "CFD":
-            raw_action = str(action[0,0])+"_"+str(action[0,1])
+            raw_action = '_'.join([str(i) for i in action[0,:]])
         else:
             raise NotImplementedError
         return raw_action
