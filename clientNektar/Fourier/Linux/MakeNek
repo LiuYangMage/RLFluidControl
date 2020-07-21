@@ -1,0 +1,50 @@
+ifeq ($(LTYPE),g)	# turn on debug flag 
+CPPFLAGS := -DDEBUG $(CPPFLAGS)
+CXXFLAGS := $(DEBUG) $(CCWOFF)
+CFLAGS := $(DEBUG) $(CWOFF)
+FFLAGS := $(DEBUGF) $(FWOFF)
+LDFLAGS	:= $(DEBUGLD)
+else			# Maximal optimization flags
+ifeq ($(LTYPE),mopt)
+CXXFLAGS := $(MOPTXX)
+CFLAGS := $(MOPT)
+FFLAGS := $(MOPTF)
+LDFLAGS	:= $(MOPTLD)
+else			# Regular optimization flags
+ifeq ($(LTYPE),opt)
+CXXFLAGS := $(OPTXX)
+CFLAGS := $(OPT)
+FFLAGS := $(OPTF)
+LDFLAGS	:= $(OPTLD)
+endif
+endif
+endif
+
+ifdef PARALLEL
+HLIB = -lhybrid$(LTYPE)-prl
+else
+HLIB = -lhybrid$(LTYPE)
+endif
+
+ifdef XMLRPC
+XMLRPC_LIBS = -L/gpfs_home/zwang197/xmlrpc-c-1.51.06/build/lib -lxmlrpc_client -lxmlrpc -lxmlrpc_xmlparse -lxmlrpc_xmltok -lxmlrpc_util -lpthread
+endif
+
+override LIBS   := -L$(HLIBDIR) $(HLIB) $(LIBS) $(XMLRPC_LIBS) #-lmatsolve -lblkmat
+override PROG   := $(PROG)F
+
+OBJS    = $(foreach module, $(SPECIAL) $(ALL), $(module).o)
+SRCE    = $(foreach module, $(SPECIAL) $(ALL), $(module).C)
+
+$(PROG): $(OBJS)
+	$(LD) $(LDFLAGS) -o $(PROG).tmp $(OBJS)  $(LIBS)
+	@echo '$(message)'
+	mv $(PROG).tmp $(PROG)
+
+clean :
+	rm -f *.o
+
+
+#LINUX is reading in curved data incorrectly in optimised mode so compile debug
+io.o:
+	$(CXX) -g $(CPPFLAGS) -c -o io.o $(VPATH)/io.C

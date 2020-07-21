@@ -1,0 +1,23 @@
+/xfft.c/1.1/Wed Jan 28 00:02:01 2004//
+/xfill.c/1.1/Wed Jan 28 00:02:01 2004//
+/xneg.c/1.1/Wed Jan 28 00:02:01 2004//
+/xrand.c/1.1/Wed Jan 28 00:02:01 2004//
+/xsadd.c/1.1/Wed Jan 28 00:02:01 2004//
+/xsdiv.c/1.1/Wed Jan 28 00:02:01 2004//
+/xsmul.c/1.1/Wed Jan 28 00:02:01 2004//
+/xvabs.c/1.1/Wed Jan 28 00:02:01 2004//
+/xvadd.c/1.1/Wed Jan 28 00:02:01 2004//
+/xvamax.c/1.1/Wed Jan 28 00:02:01 2004//
+/xvcos.c/1.1/Wed Jan 28 00:02:01 2004//
+/xvdiv.c/1.1/Wed Jan 28 00:02:01 2004//
+/xvexp.c/1.1/Wed Jan 28 00:02:01 2004//
+/xvlg10.c/1.1/Wed Jan 28 00:02:01 2004//
+/xvmul.c/1.1/Wed Jan 28 00:02:01 2004//
+/xvneg.c/1.1/Wed Jan 28 00:02:01 2004//
+/xvrand.c/1.1/Wed Jan 28 00:02:01 2004//
+/xvrecp.c/1.1/Wed Jan 28 00:02:01 2004//
+/xvsin.c/1.1/Wed Jan 28 00:02:02 2004//
+/xvsqrt.c/1.1/Wed Jan 28 00:02:02 2004//
+/xvsub.c/1.1/Wed Jan 28 00:02:02 2004//
+/xzero.c/1.1/Wed Jan 28 00:02:02 2004//
+D

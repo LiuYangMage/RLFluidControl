@@ -1,0 +1,102 @@
+ARCH	:= $(shell uname)
+PROG	= nektar_lns
+HYBRID	= ../../
+VPATH   = ../src:../../Arnoldi/src
+HLIBDIR	= $(HYBRID)/Hlib/$(ARCH)
+HDRDIR	= $(HYBRID)/include
+TARFILE	= $(PROG).tar
+
+ALL     = mpinektar drive io prepost bwoptim convective comm\
+	  forces pressure rotational stokes wannier analyser\
+	  mlevel varv convarv Fourier_List interp cfl DN
+
+defines =   DIM=2 LNS
+CPPFLAGS = -I$(HDRDIR)
+FFTPRG	= yes
+#MPIPRG  = yes
+
+ifeq ($(ARCH),SunOS)			# SunOS 5.*
+include $(HYBRID)/Flags/SunOS.inc
+#OPT += -Qoption iropt -O4+vector
+endif
+
+ifeq ($(ARCH),ap3000)			# ap3000
+include $(HYBRID)/Flags/ap3000.inc
+endif
+
+ifeq ($(ARCH),IRIX)			# Silicon Graphics IRIX
+include $(HYBRID)/Flags/IRIX.inc
+endif
+
+ifeq ($(ARCH),IRIX64)			# Silicon Graphics IRIX64
+include $(HYBRID)/Flags/IRIX64.inc
+endif
+
+ifeq ($(ARCH),AIX)			# IBM AIX
+include $(HYBRID)/Flags/AIX.inc
+endif
+
+ifeq ($(ARCH),cray-pvp)			# Cray PVP
+include $(HYBRID)/Flags/CRAYPVP.inc
+endif
+
+ifeq ($(ARCH),cray-t3d)			# Cray T3D
+include $(HYBRID)/Flags/T3D.inc
+endif
+
+ifeq ($(ARCH),unicosmk)			# Cray T3E
+include $(HYBRID)/Flags/T3E.inc
+endif
+
+ifeq ($(ARCH),alpha)			# DEC Alpha AXP
+include $(HYBRID)/Flags/DECAXP.inc
+endif
+
+ifeq ($(ARCH),HP-UX)			# HP-UX
+include $(HYBRID)/Flags/HP-UX.inc
+endif
+
+ifeq ($(ARCH),GCC)			# Generic GCC platform
+include $(HYBRID)/Flags/GCC.inc
+endif
+
+ifeq ($(ARCH),Linux)			# Linux using  GCC 
+include $(HYBRID)/Flags/GCC.inc
+endif
+
+ifdef PARALLEL
+override CPPFLAGS :=  -DPARALLEL  $(CPPFLAGS) 
+endif
+
+ifdef    defines
+DEF     = $(foreach def, $(defines) $(ADDONS), -D$(def))
+override CPPFLAGS :=  $(DEF) $(CPPFLAGS)
+endif
+
+export
+
+help:
+	@echo ''
+	@echo ' Nektar Makefiles:'
+	@echo ''
+	@echo ' Run make with one of the following options:'	
+	@echo '	a) dbx  ...Fourier dbx version'
+	@echo '	b) opt  ...Fourier optimised version'
+	@echo '	c) mopt ...Fourier maximally (?) optimised version'
+	@echo ''
+	@echo '	need PARALLEL=1 in command line for parallel version'
+	@echo ''
+
+dbx: 
+	$(MAKE) LTYPE=g -f MakeNek
+opt:
+	$(MAKE) LTYPE=opt -f MakeNek
+mopt:
+	$(MAKE) LTYPE=mopt -f MakeNek
+
+tar: Makefile
+	@echo 'creating a tape archive in' $(TARFILE)
+	@tar cvf $(TARFILE) Makefile MakeNek src/*.C
+clean:
+	$(MAKE) -f MakeNek clean
+

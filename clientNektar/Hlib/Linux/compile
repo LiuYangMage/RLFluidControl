@@ -1,0 +1,7 @@
+rm libhybrid*
+make PARALLEL=1 dbx
+make PARALLEL=1 mopt
+make PARALLEL=1 opt
+make dbx
+make mopt
+make mopt
