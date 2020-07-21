@@ -4,7 +4,6 @@ Reinforcement learning for active fluid control.
 See our paper: Reinforcement Learning for Active Flow Control in Experiments (https://arxiv.org/abs/2003.03419)
 
 ## Dependencies
-Processing from https://processing.org/download/
 
 Python Packages: TensorFlow 1.x (1.13+ suggested), numpy
 
@@ -19,10 +18,12 @@ $ python server.py -env CFD -fil None
 
 `-fil None` means that we don't use any filter, in consistent to our practice for the CFD environment in the paper.
 
-Start the client (CFD environment):
+Start the client:
+### 2D BDIM:
 
-Run **`clientCFD/clientCFD.pde`**  in Processing. 
+We provide a simple example using Lilypad, a code based on a 2D BDIM method developed by Dr. Gab Weymouth. See https://github.com/weymouth/lily-pad.
 
-## External Links
+Run **`clientLilypad/clientCFD.pde`**  in Processing (download from https://processing.org/download/). 
 
-The CFD processing code is based on a 2D BDIM code ''lilypad'' developed by Dr. Gab Weymouth. Here is the Github link: https://github.com/weymouth/lily-pad 
+### 3D LES:
+See details in **`clientNektar/Readme`**
