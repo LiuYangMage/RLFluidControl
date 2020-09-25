@@ -24,3 +24,7 @@ mpiexec -n 64 ./nektarF -z128 -deal -chk -r0 -S -V cyl.rea
 
 # cyl.rea is the configuration file, where you can modify the Re number etc.
 or use runme script in example
+
+#######################################
+Simulation results for the 3D vortices in Figure 5 of the PNAS paper are available in 
+https://drive.google.com/drive/folders/1XqK9AP03CgEdwBmS3N-Mclr80fAV-wsB?usp=sharing
